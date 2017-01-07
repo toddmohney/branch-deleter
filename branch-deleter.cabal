@@ -26,8 +26,12 @@ executable branch-deleter-exe
                        -rtsopts
                        -with-rtsopts=-N
   default-language:    Haskell2010
+  default-extensions:
+    OverloadedStrings
   build-depends:       base
                      , branch-deleter
+                     , process >= 1.4.2.0 && < 1.4.3.0
+                     , text
 
 test-suite branch-deleter-test
   type:                exitcode-stdio-1.0
