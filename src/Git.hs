@@ -22,9 +22,9 @@ data GitError = NotFullyMergedError { getMsg :: Text }
 
 listBranches :: IO [Branch]
 listBranches = do
-  result <- fmap parseResult $ gitCommand ["branch", "-a"]
+  result <- parseResult <$> gitCommand ["branch", "-a"]
   case result of
-    Right success -> return $ map mkBranch (map Text.strip (Text.lines success))
+    Right success -> return $ map (mkBranch . Text.strip) (Text.lines success)
     Left gitError -> putStrLn (Text.unpack (getMsg gitError)) >> return []
 
 deleteBranch :: Branch -> IO (Either GitError Text)
@@ -35,8 +35,8 @@ forceDeleteBranch branch = deleteBranch' branch True
 
 deleteBranch' :: Branch -> Bool -> IO (Either GitError Text)
 deleteBranch' (Current _) _ = return $ Left (UnhandledError "Politely refusing to delete the current branch. Sorry.")
-deleteBranch' b@(Local _) force = fmap parseResult $ gitCommand (deleteBranchCommand b force)
-deleteBranch' (Remote branch) _ = fmap parseResult $ gitCommand ["push", "--delete", remoteName, branchName]
+deleteBranch' b@(Local _) force = parseResult <$> gitCommand (deleteBranchCommand b force)
+deleteBranch' (Remote branch) _ = parseResult <$> gitCommand ["push", "--delete", remoteName, branchName]
   where
     remoteName = fst $ tokenizeBranchName branch
     branchName = snd $ tokenizeBranchName branch

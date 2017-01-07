@@ -1,0 +1,12 @@
+engines:
+  hlint:
+    enabled: true
+
+ratings:
+  paths:
+  - app/**/*
+  - src/**/*
+
+exclude_paths:
+- test/
+- test-repo/

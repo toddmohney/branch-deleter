@@ -8,12 +8,12 @@ import qualified Git
 confirmDeleteBranches :: IO ()
 confirmDeleteBranches = do
   bs <- Git.listBranches
-  putStrLn $ (show $ length bs) ++ " branches found."
+  putStrLn (show (length bs) ++ " branches found.")
   sequence_ $ map askToDelete bs
 
 askToDelete :: Branch -> IO ()
 askToDelete branch = do
-  putStrLn $ "Are you sure you want to delete " ++ (Text.unpack $ getBranchName branch) ++ "? (y/n)"
+  putStrLn ("Are you sure you want to delete " ++ Text.unpack (getBranchName branch) ++ "? (y/n)")
   answer <- getLine
   case answer of
     "y" -> deleteBranch branch
@@ -21,7 +21,7 @@ askToDelete branch = do
 
 askToForceDelete :: Branch -> IO ()
 askToForceDelete branch = do
-  putStrLn $ "Would you like to force delete " ++ (Text.unpack $ getBranchName branch) ++ "? (y/n)"
+  putStrLn ("Would you like to force delete " ++ Text.unpack (getBranchName branch) ++ "? (y/n)")
   answer <- getLine
   case answer of
     "y" -> forceDeleteBranch branch
