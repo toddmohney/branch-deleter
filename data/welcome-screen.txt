@@ -1,0 +1,7 @@
+***************************
+
+Welcome to branch-deleter!
+
+Let's delete those branches
+
+***************************

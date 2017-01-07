@@ -2,21 +2,21 @@ module Main where
 
 import Control.Monad (sequence_)
 import Data.Monoid ((<>))
-import Data.Text (Text)
 import qualified Data.Text as Text
 import Git (Branch (..), GitError (..))
+import Output
+import Paths_branch_deleter
 import qualified Git
-import System.Console.ANSI as Term
 
 confirmDeleteBranches :: IO ()
 confirmDeleteBranches = do
   bs <- Git.listBranches
-  printInfo (Text.pack $ show (length bs) ++ " branches found.")
+  printInfoBold (Text.pack $ show (length bs) ++ " branches found.\n\n")
   sequence_ $ map askToDelete bs
 
 askToDelete :: Branch -> IO ()
 askToDelete branch = do
-  printInfo ("Delete " <> getBranchName branch <> "? (y/n)")
+  printNorm "Delete " >> printInfoBold (getBranchName branch) >> printNorm "? (y/n)\n"
   answer <- getLine
   case answer of
     "y" -> deleteBranch branch
@@ -24,7 +24,7 @@ askToDelete branch = do
 
 askToForceDelete :: Branch -> IO ()
 askToForceDelete branch = do
-  printWarn ("Force delete " <> getBranchName branch <> "? (y/n)")
+  printWarn "Force delete " >> printInfoBold (getBranchName branch) >> printWarn "? (y/n)\n"
   answer <- getLine
   case answer of
     "y" -> forceDeleteBranch branch
@@ -45,29 +45,10 @@ forceDeleteBranch branch = do
     Right success -> printInfo success
     Left gitError -> printError (Git.getMsg gitError)
 
-printInfo :: Text -> IO ()
-printInfo txt = do
-  setSGR [ SetConsoleIntensity NormalIntensity
-         , SetColor Foreground Vivid Green
-         ]
-  putStrLn (Text.unpack txt)
-  setSGR []
-
-printWarn :: Text -> IO ()
-printWarn txt = do
-  setSGR [ SetConsoleIntensity NormalIntensity
-         , SetColor Foreground Vivid Yellow
-         ]
-  putStrLn (Text.unpack txt)
-  setSGR []
-
-printError :: Text -> IO ()
-printError txt = do
-  setSGR [ SetConsoleIntensity NormalIntensity
-         , SetColor Foreground Vivid Red
-         ]
-  putStrLn (Text.unpack txt)
-  setSGR []
+printWelcome :: IO ()
+printWelcome = do
+  welcomeFile <- getDataFileName "data/welcome-screen.txt"
+  readFile welcomeFile >>= putStrLn
 
 main :: IO ()
-main = confirmDeleteBranches
+main = printWelcome >> confirmDeleteBranches

@@ -25,7 +25,7 @@ listBranches = do
   result <- parseResult <$> gitCommand ["branch", "-a"]
   case result of
     Right success -> return $ map (mkBranch . Text.strip) (Text.lines success)
-    Left gitError -> putStrLn (Text.unpack (getMsg gitError)) >> return []
+    Left gitError -> return []
 
 deleteBranch :: Branch -> IO (Either GitError Text)
 deleteBranch branch = deleteBranch' branch False
