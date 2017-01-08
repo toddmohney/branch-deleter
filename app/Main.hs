@@ -1,26 +1,50 @@
 module Main where
 
-import Control.Monad (sequence_)
+import Control.Monad (foldM)
 import Data.Monoid ((<>))
 import qualified Data.Text as Text
+import qualified Git
 import Git (Branch (..), GitError (..))
 import Output
 import Paths_branch_deleter
-import qualified Git
 
-confirmDeleteBranches :: IO ()
-confirmDeleteBranches = do
+main :: IO ()
+main = do
+  printWelcome
+
   bs <- Git.listBranches
   printInfoBold (Text.pack $ show (length bs) ++ " branches found.\n\n")
-  sequence_ $ map askToDelete bs
 
-askToDelete :: Branch -> IO ()
-askToDelete branch = do
+  foldM (\coll b -> askToDelete coll b) [] bs >>= confirmPlan
+
+printWelcome :: IO ()
+printWelcome = do
+  welcomeFile <- getDataFileName "data/welcome-screen.txt"
+  readFile welcomeFile >>= putStrLn
+
+confirmPlan :: [(Bool, Branch)] -> IO ()
+confirmPlan plans = showPlan plans >> confirmPlan'
+  where
+    confirmPlan' = do
+      printNorm "Do you approve of this plan? (y/n)\n"
+      answer <- getLine
+      case answer of
+        "y" -> mapM_ (deleteBranch . snd) (filter fst plans)
+        _   -> printNorm "Exiting...\n"
+
+showPlan :: [(Bool, Branch)] -> IO ()
+showPlan = mapM_ drawRow
+  where
+    drawRow (True, branch)  = printInfo ("[x] " <> getBranchName branch <> "\n")
+    drawRow (False, branch) = printInfo ("[ ] " <> getBranchName branch <> "\n")
+
+askToDelete :: [(Bool, Branch)] -> Branch -> IO [(Bool, Branch)]
+askToDelete collection branch = do
   printNorm "Delete " >> printInfoBold (getBranchName branch) >> printNorm "? (y/n)\n"
   answer <- getLine
   case answer of
-    "y" -> deleteBranch branch
-    _ -> return ()
+    "y" -> return $ collection ++ [(True, branch)]
+    _   -> return $ collection ++ [(False, branch)]
 
 askToForceDelete :: Branch -> IO ()
 askToForceDelete branch = do
@@ -44,11 +68,3 @@ forceDeleteBranch branch = do
   case result of
     Right success -> printInfo success
     Left gitError -> printError (Git.getMsg gitError)
-
-printWelcome :: IO ()
-printWelcome = do
-  welcomeFile <- getDataFileName "data/welcome-screen.txt"
-  readFile welcomeFile >>= putStrLn
-
-main :: IO ()
-main = printWelcome >> confirmDeleteBranches

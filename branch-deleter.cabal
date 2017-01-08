@@ -25,11 +25,9 @@ library
     -fwarn-unused-binds
     -fwarn-unused-imports
   build-depends:       base >= 4.7 && < 5
-                     , ansi-terminal >= 0.6.2.3 && < 0.6.3.0
                      , process >= 1.4.2.0 && < 1.4.3.0
                      , text >= 1.2.2.1 && < 1.2.3.0
   exposed-modules:     Git
-                     , Output
 
 executable branch-deleter-exe
   hs-source-dirs:      app
@@ -46,6 +44,7 @@ executable branch-deleter-exe
   default-extensions:
     OverloadedStrings
   build-depends:       base
+                     , ansi-terminal >= 0.6.2.3 && < 0.6.3.0
                      , branch-deleter
                      , text >= 1.2.2.1 && < 1.2.3.0
 
